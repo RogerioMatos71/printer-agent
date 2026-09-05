@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class PrinterReading {
 
-     private String id;
+    private String id;
     private String printerId;
     private String serialNumber;
     private Long totalPageCount;

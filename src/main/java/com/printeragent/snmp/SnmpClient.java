@@ -14,12 +14,13 @@ import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 
-public class SnmpClient {
+public class SnmpClient implements SnmpReader{
 
 
     private static final int DEFAULT_TIMEOUT = 1500;
     private static final int DEFAULT_RETRIES = 2;
 
+    @Override 
     public SnmpResult readOid(
             Printer printer,
             String oid) {

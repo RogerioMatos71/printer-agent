@@ -3,10 +3,12 @@ package com.printeragent.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,26 +22,33 @@ import com.printeragent.snmp.PrinterProfileResolver;
 import com.printeragent.snmp.SnmpReader;
 import com.printeragent.snmp.SnmpResult;
 
-
-
+@ExtendWith(MockitoExtension.class)
 public class PrinterCollectionServiceTest {
 
+        @Mock
+        private SnmpReader snmpReader;
 
-        
+        private PrinterProfileResolver profileResolver;
+        private PrinterCollectionService service;
+        private Printer printer;
+        private BrotherPrinterProfile profile;
 
-        @Test
-        void shouldCollectPrinterReadingSuccessfully() {
+        @BeforeEach
+        void setUp() {
 
-                SnmpReader snmpReader = mock(SnmpReader.class);
-                PrinterProfileResolver profileResolver = new PrinterProfileResolver();
-                PrinterCollectionService service = new PrinterCollectionService(snmpReader, profileResolver);
+                profileResolver = new PrinterProfileResolver();
+                service = new PrinterCollectionService(snmpReader, profileResolver);
 
-                Printer printer = new Printer();
+                printer = new Printer();
                 printer.setId("printer-1");
                 printer.setManufacturer("Brother");
 
-                BrotherPrinterProfile profile = new BrotherPrinterProfile();
-                
+                profile = new BrotherPrinterProfile();
+
+        }
+
+        @Test
+        void shouldCollectPrinterReadingSuccessfully() {
 
                 when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
                                 .thenReturn(new SnmpResult(
@@ -69,17 +78,6 @@ public class PrinterCollectionServiceTest {
         @Test
         void shouldFailWhenSerialNumberCannotBeRead() {
 
-                SnmpReader snmpReader = mock(SnmpReader.class);
-                PrinterProfileResolver profileResolver = new PrinterProfileResolver();
-                PrinterCollectionService service = new PrinterCollectionService(snmpReader, profileResolver);
-
-                Printer printer = new Printer();
-                printer.setId("printer-1");
-                printer.setManufacturer("Brother");
-
-                BrotherPrinterProfile profile = new BrotherPrinterProfile();
-               
-
                 when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
                                 .thenReturn(new SnmpResult(
                                                 profile.getSerialNumberOid(),
@@ -87,11 +85,7 @@ public class PrinterCollectionServiceTest {
                                                 false,
                                                 "A impressora não respondeu."));
 
-                
-
                 PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
-
-                 
 
                 assertEquals(CollectionStatus.FAILURE, reading.getStatus());
                 assertEquals("A impressora não respondeu.", reading.getFailureMessage());
@@ -103,22 +97,10 @@ public class PrinterCollectionServiceTest {
                 verify(snmpReader, never()).readOid(
                                 printer, profile.getTotalPageCountOid());
 
-               
         }
 
         @Test
         void shouldFailWhenTotalPageCountCannotBeRead() {
-
-                SnmpReader snmpReader = mock(SnmpReader.class);
-                PrinterProfileResolver profileResolver = new PrinterProfileResolver();
-                PrinterCollectionService service = new PrinterCollectionService(snmpReader, profileResolver);
-
-                Printer printer = new Printer();
-                printer.setId("printer-1");
-                printer.setManufacturer("Brother");
-
-                BrotherPrinterProfile profile = new BrotherPrinterProfile();
-                
 
                 when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
                                 .thenReturn(new SnmpResult(
@@ -136,8 +118,6 @@ public class PrinterCollectionServiceTest {
 
                 PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
 
-               
-
                 assertEquals(CollectionStatus.FAILURE, reading.getStatus());
                 assertEquals("U64198M1N776620", reading.getSerialNumber());
                 assertNull(reading.getTotalPageCount());
@@ -147,16 +127,6 @@ public class PrinterCollectionServiceTest {
         @Test
         void shouldFailWhenTotalPageCountIsInvalid() {
 
-                SnmpReader snmpReader = mock(SnmpReader.class);
-                PrinterProfileResolver profileResolver = new PrinterProfileResolver();
-                PrinterCollectionService service = new PrinterCollectionService(snmpReader, profileResolver);
-
-                Printer printer = new Printer();
-                printer.setId("printer-1");
-                printer.setManufacturer("Brother");
-
-                BrotherPrinterProfile profile = new BrotherPrinterProfile();
-                
                 when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
                                 .thenReturn(new SnmpResult(
                                                 profile.getSerialNumberOid(),

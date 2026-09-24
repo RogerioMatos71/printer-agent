@@ -64,6 +64,14 @@ public class PrinterCollectionServiceTest {
                                                 true,
                                                 null));
 
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getCapacityOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getCapacityOid(), "-2", true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getLevelOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getLevelOid(), "-3", true,
+                                                null));
+
                 PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
 
                 assertEquals("printer-1", reading.getPrinterId());
@@ -71,6 +79,8 @@ public class PrinterCollectionServiceTest {
                 assertEquals(272617L, reading.getTotalPageCount());
                 assertEquals(CollectionType.REGULAR, reading.getCollectionType());
                 assertEquals(CollectionStatus.SUCCESS, reading.getStatus());
+                assertEquals(-2, reading.getTonerCapacity());
+                assertEquals(-3, reading.getTonerLevel());
                 assertNotNull(reading.getCollectedAt());
                 assertNull(reading.getFailureMessage());
         }
@@ -147,6 +157,145 @@ public class PrinterCollectionServiceTest {
                 assertEquals("U64198M1N776620", reading.getSerialNumber());
                 assertNull(reading.getTotalPageCount());
                 assertEquals("Contador total inválido.", reading.getFailureMessage());
+        }
+
+        @Test
+        void shouldFailWhenTonerCapacityCannotBeRead() {
+                when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
+                                .thenReturn(new SnmpResult(profile.getSerialNumberOid(),
+                                                "U64198M1N776620",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTotalPageCountOid()))
+                                .thenReturn(new SnmpResult(
+                                                profile.getTotalPageCountOid(),
+                                                "272617",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getCapacityOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getCapacityOid(),
+                                                null,
+                                                false,
+                                                "Não foi possível obter a capacidade do toner."));
+
+                PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
+
+                assertEquals(CollectionStatus.FAILURE, reading.getStatus());
+                assertEquals("U64198M1N776620", reading.getSerialNumber());
+                assertEquals(272617L, reading.getTotalPageCount());
+                assertNull(reading.getTonerCapacity());
+                assertEquals("Não foi possível obter a capacidade do toner.", reading.getFailureMessage());
+
+        }
+
+        @Test
+        void shouldFailWhenTonerCapacityIsInvalid() {
+                when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
+                                .thenReturn(new SnmpResult(profile.getSerialNumberOid(),
+                                                "U64198M1N776620",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTotalPageCountOid()))
+                                .thenReturn(new SnmpResult(
+                                                profile.getTotalPageCountOid(),
+                                                "272617",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getCapacityOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getCapacityOid(),
+                                                "valor-invalido",
+                                                true,
+                                                "Capacidade do toner inválida."));
+
+                PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
+
+                assertEquals(CollectionStatus.FAILURE, reading.getStatus());
+                assertEquals("U64198M1N776620", reading.getSerialNumber());
+                assertEquals(272617L, reading.getTotalPageCount());
+                assertNull(reading.getTonerCapacity());
+                assertEquals("Capacidade do toner inválida.", reading.getFailureMessage());
+        }
+
+        @Test
+        void shouldFailWhenTonerLevelCannotBeRead() {
+                when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
+                                .thenReturn(new SnmpResult(profile.getSerialNumberOid(),
+                                                "U64198M1N776620",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTotalPageCountOid()))
+                                .thenReturn(new SnmpResult(
+                                                profile.getTotalPageCountOid(),
+                                                "272617",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getCapacityOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getCapacityOid(),
+                                                "-2",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getLevelOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getLevelOid(), 
+                                                null,
+                                                false,
+                                                "Não foi possível obter o nível do toner."));
+
+                PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
+
+                assertEquals(CollectionStatus.FAILURE, reading.getStatus());
+                assertEquals("U64198M1N776620", reading.getSerialNumber());
+                assertEquals(272617L, reading.getTotalPageCount());
+                assertEquals(-2, reading.getTonerCapacity());
+                assertNull(reading.getTonerLevel());
+
+                assertEquals("Não foi possível obter o nível do toner.", reading.getFailureMessage());
+
+        }
+
+        @Test
+        void shouldFailWhenTonerLevelIsInvalid() {
+                when(snmpReader.readOid(printer, profile.getSerialNumberOid()))
+                                .thenReturn(new SnmpResult(profile.getSerialNumberOid(),
+                                                "U64198M1N776620",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTotalPageCountOid()))
+                                .thenReturn(new SnmpResult(
+                                                profile.getTotalPageCountOid(),
+                                                "272617",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getCapacityOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getCapacityOid(),
+                                                "-2",
+                                                true,
+                                                null));
+
+                when(snmpReader.readOid(printer, profile.getTonerDefinition().getLevelOid()))
+                                .thenReturn(new SnmpResult(profile.getTonerDefinition().getLevelOid(), 
+                                                "valor-invalido",
+                                                true,
+                                                "Nível do toner inválido."));
+
+                PrinterReading reading = service.collect(printer, CollectionType.REGULAR);
+
+                assertEquals(CollectionStatus.FAILURE, reading.getStatus());
+                assertEquals("U64198M1N776620", reading.getSerialNumber());
+                assertEquals(272617L, reading.getTotalPageCount());
+                assertNull(reading.getTonerLevel());
+                assertEquals("Nível do toner inválido.", reading.getFailureMessage());
+
+                
+
         }
 
 }

@@ -1,6 +1,7 @@
 package com.printeragent.service;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 import com.printeragent.domain.CollectionStatus;
 import com.printeragent.domain.CollectionType;
@@ -11,7 +12,6 @@ import com.printeragent.snmp.PrinterProfileResolver;
 import com.printeragent.snmp.SnmpReader;
 import com.printeragent.snmp.SnmpResult;
 import com.printeragent.snmp.SupplyDefinition;
-
 
 public class PrinterCollectionService {
 
@@ -58,102 +58,68 @@ public class PrinterCollectionService {
         reading.setSerialNumber(
                 serialResult.getValue());
 
-        SnmpResult counterResult = snmpReader.readOid(
-                printer,
-                profile.getTotalPageCountOid());
-
-        if (!counterResult.isSuccessful()) {
-
-            reading.setStatus(
-                    CollectionStatus.FAILURE);
-
-            reading.setFailureMessage(
-                    counterResult.getError());
-
+        if (!readIntegerValue(reading, printer, profile.getTotalPageCountOid(),
+                "Contador total inválido.", value -> reading.setTotalPageCount(value))) {
             return reading;
         }
-
-        try {
-
-            long totalPageCount = Long.parseLong(
-                    counterResult.getValue());
-
-            reading.setTotalPageCount(
-                    totalPageCount);
-
-        } catch (NumberFormatException e) {
-
-            reading.setStatus(
-                    CollectionStatus.FAILURE);
-
-            reading.setFailureMessage(
-                    "Contador total inválido.");
-
-            return reading;
-        }
-
-        reading.setStatus(
-                CollectionStatus.SUCCESS);
 
         SupplyDefinition tonerDefinition = profile.getTonerDefinition();
 
-        SnmpResult tonerSnmpResult = snmpReader.readOid(printer, tonerDefinition.getCapacityOid());
-
-        if (!tonerSnmpResult.isSuccessful()) {
-            reading.setStatus(CollectionStatus.FAILURE);
-
-            reading.setFailureMessage(tonerSnmpResult.getError());
-
+        if (!readIntegerValue(reading, printer, tonerDefinition.getCapacityOid(),
+                "Capacidade do toner inválida.", value -> reading.setTonerCapacity(value))) {
             return reading;
         }
 
-        reading.setStatus(CollectionStatus.SUCCESS);
-
-        try {
-
-            Integer tonerCapacity = Integer.parseInt(tonerSnmpResult.getValue());
-
-            reading.setTonerCapacity(tonerCapacity);
-
-        } catch (NumberFormatException e) {
-            reading.setStatus(CollectionStatus.FAILURE);
-
-            reading.setFailureMessage("Capacidade do toner inválida.");
-
+        if (!readIntegerValue(reading, printer, tonerDefinition.getLevelOid(),
+                "Nível do toner inválido.", value -> reading.setTonerLevel(value))) {
             return reading;
         }
 
-        reading.setStatus(CollectionStatus.SUCCESS);
+        SupplyDefinition drumDefinition = profile.getDrumDefinition();
 
-        tonerSnmpResult = snmpReader.readOid(printer, tonerDefinition.getLevelOid());
-
-        if (!tonerSnmpResult.isSuccessful()) {
-            reading.setStatus(CollectionStatus.FAILURE);
-
-            reading.setFailureMessage(tonerSnmpResult.getError());
-
+        if (!readIntegerValue(reading, printer, drumDefinition.getCapacityOid(),
+                "Capacidade do cilindro inválida.", value -> reading.setDrumCapacity(value))) {
             return reading;
         }
 
-        reading.setStatus(CollectionStatus.SUCCESS);
-
-        try {
-
-            Integer tonerLevel = Integer.parseInt(tonerSnmpResult.getValue());
-
-            reading.setTonerLevel(tonerLevel);
-
-        } catch (NumberFormatException e) {
-            reading.setStatus(CollectionStatus.FAILURE);
-
-            reading.setFailureMessage("Nível do toner inválido.");
-
+        if (!readIntegerValue(reading, printer, drumDefinition.getLevelOid(),
+                "Nível do cilindro inválido.", value -> reading.setDrumLevel(value))) {
             return reading;
         }
 
         reading.setStatus(CollectionStatus.SUCCESS);
 
         return reading;
+
+    }
+
+    public boolean readIntegerValue(PrinterReading reading, Printer printer, String oid, String failureMessage,
+            Consumer<Integer> action) {
+
+        SnmpResult snmpResult = snmpReader.readOid(printer, oid);
+
+        if (!snmpResult.isSuccessful()) {
+            reading.setStatus(CollectionStatus.FAILURE);
+
+            reading.setFailureMessage(snmpResult.getError());
+
+            return false;
+
+        }
+
+        try {
+            Integer value = Integer.parseInt(snmpResult.getValue());
+
+            action.accept(value);
+        } catch (NumberFormatException e) {
+            reading.setStatus(CollectionStatus.FAILURE);
+
+            reading.setFailureMessage(failureMessage);
+
+            return false;
+
+        }
+        return true;
 
     }
 }

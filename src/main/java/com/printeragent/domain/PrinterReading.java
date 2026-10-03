@@ -7,7 +7,7 @@ public class PrinterReading {
     private String id;
     private String printerId;
     private String serialNumber;
-    private Long totalPageCount;
+    private Integer totalPageCount;
     private Integer tonerCapacity;
     private Integer tonerLevel;
     private Integer drumCapacity;
@@ -44,11 +44,11 @@ public class PrinterReading {
         this.serialNumber = serialNumber;
     }
 
-    public Long getTotalPageCount() {
+    public Integer getTotalPageCount() {
         return totalPageCount;
     }
 
-    public void setTotalPageCount(Long totalPageCount) {
+    public void setTotalPageCount(Integer totalPageCount) {
         this.totalPageCount = totalPageCount;
     }
 

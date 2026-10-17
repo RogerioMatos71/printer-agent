@@ -1,10 +1,22 @@
 package com.printeragent.domain;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+@Entity 
+@Table (name = "printer_readings")
 public class PrinterReading {
 
-    private String id;
+    @Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
     private String printerId;
     private String serialNumber;
     private Integer totalPageCount;
@@ -13,18 +25,23 @@ public class PrinterReading {
     private Integer drumCapacity;
     private Integer drumLevel;
     private LocalDateTime collectedAt;
+
+    @Enumerated (EnumType.STRING)
     private CollectionType collectionType;
+
+    @Enumerated (EnumType.STRING)
     private CollectionStatus status;
+
     private String failureMessage;
 
     public PrinterReading() {
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

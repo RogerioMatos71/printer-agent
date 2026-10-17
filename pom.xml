@@ -14,6 +14,10 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <property name="jakarta.persistence.schema-generation.database.action" value="create" />
+
+
     </properties>
 
     <dependencies>
@@ -36,6 +40,18 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>5.14.2</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>7.4.11.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>26.7.0</version>
         </dependency>
 
     </dependencies>
